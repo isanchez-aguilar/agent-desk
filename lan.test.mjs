@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir, networkInterfaces } from 'node:os';
+import { request } from 'node:http';
 import { isPrivateIPv4, hostAllowed, isLoopback, newAccessCode, codeMatches, createSessions, createLimiter } from './lan.mjs';
 import { initData, saveJSON } from './store.mjs';
 import { createApp } from './server.mjs';
@@ -34,6 +35,9 @@ test('sessions accept only issued tokens and the limiter locks after repeated fa
   assert.equal(sessions.valid(`other=1; qd_session=${token}`), true);
   assert.equal(sessions.valid(`qd_session=${'0'.repeat(64)}`), false);
   assert.equal(sessions.valid(''), false);
+  let clock = 0; const timed = createSessions({ now: () => clock, ttl: 1000 }), expiring = timed.issue();
+  assert.equal(timed.valid(`qd_session=${expiring}`), true); clock = 1000;
+  assert.equal(timed.valid(`qd_session=${expiring}`), false, 'a session expires after its time to live');
   let time = 0; const limiter = createLimiter({ limit: 3, windowMs: 1000, now: () => time });
   for (let index = 0; index < 3; index++) limiter.fail('a');
   assert.equal(limiter.blocked('a'), true); assert.equal(limiter.blocked('b'), false);
@@ -109,4 +113,16 @@ test('a local client still needs the Origin and the per-process token to write',
   assert.equal((await post({})).status, 403, 'no origin, no token');
   assert.equal((await post({ Origin: app.origin })).status, 403, 'no token');
   assert.equal((await post({ Origin: app.origin, 'X-Quota-Desk-Token': 'wrong' })).status, 403, 'wrong token');
+});
+
+test('a malformed request target from an unauthenticated network client gets a 400 and does not stop the server', { skip: !lanAddress && 'no private network interface' }, async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-lan-bad-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  initData(join(directory, 'data'));
+  saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false });
+  const app = createApp({ dataDir: join(directory, 'data'), port: 49196, lan: true });
+  await new Promise(resolve => app.server.listen(49196, '0.0.0.0', resolve));
+  t.after(() => new Promise(resolve => { app.server.close(resolve); app.server.closeAllConnections(); }));
+  const status = path => new Promise(resolve => request({ host: lanAddress, port: 49196, path }, response => { response.resume(); resolve(response.statusCode); }).end());
+  assert.equal(await status('//['), 400);
+  assert.equal((await fetch(`http://${lanAddress}:49196/api/data`)).status, 401, 'still serving');
 });
