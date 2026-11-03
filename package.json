@@ -1,6 +1,6 @@
 {
   "name": "quota-desk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A local dashboard for your AI coding agents: quotas for Codex, Claude Code and Antigravity, recent sessions and token counts, and a work log, all read on your own machine.",
   "keywords": [
     "ai",

@@ -40,7 +40,7 @@ export function rpcRead(exe, method, params = {}) {
         if (message.id === 1) finish(message.error ? new Error('The account did not return this information.') : null, message.result);
       }
     });
-    send({ id: 0, method: 'initialize', params: { clientInfo: { name: 'quota_desk', title: 'Quota Desk', version: '0.1.1' } } });
+    send({ id: 0, method: 'initialize', params: { clientInfo: { name: 'quota_desk', title: 'Quota Desk', version: '0.1.2' } } });
   });
 }
 export async function fetchQuotas(config) {
