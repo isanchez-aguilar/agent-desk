@@ -2,9 +2,9 @@
 
 All notable changes. Format based on [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [0.1.1] - 2026-11-03
 
-### Fixed
+### Security
 
 - LAN mode: a malformed request target (for example `//[`) from a client that had not signed in raised an unhandled error and stopped the server. It now gets a `400`.
 - LAN mode: sessions now expire on the server after 30 days, as the cookie and the docs already said.
@@ -14,7 +14,7 @@ All notable changes. Format based on [Keep a Changelog](https://keepachangelog.c
 
 - Unauthenticated network clients cannot read or write even with a forged `Origin` and token; local writes still need the `Origin` and the per-process token.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-11-03
 
 First public release.
 
