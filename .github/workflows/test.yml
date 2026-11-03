@@ -1,0 +1,57 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node-test:
+    name: node --test (${{ matrix.os }}, node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        node: [22, 24]
+        include:
+          # The declared minimum: node:sqlite works without a flag from 22.13.
+          - os: ubuntu-latest
+            node: 22.13.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Syntax check
+        run: npm run check
+      - name: Run the suite
+        run: node --test
+
+  package:
+    name: npm package installs and runs (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pack, install the tarball and run it
+        shell: bash
+        run: |
+          npm pack --silent
+          prefix="$RUNNER_TEMP/prefix"
+          npm install --global --prefix "$prefix" ./isanchez-aguilar-agent-desk-*.tgz
+          # On Windows RUNNER_TEMP is D:\a\_temp; bash PATH needs /d/a/_temp.
+          if command -v cygpath > /dev/null; then prefix="$(cygpath -u "$prefix")"; fi
+          export PATH="$prefix:$prefix/bin:$PATH"
+          export AGENT_DESK_DATA="$RUNNER_TEMP/agent-desk-data"
+          agent-desk --version
+          test "$(agent-desk data)" = "$(node -p "require('path').resolve(process.env.AGENT_DESK_DATA)")"

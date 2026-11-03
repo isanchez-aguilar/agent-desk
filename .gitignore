@@ -1,0 +1,5 @@
+# Local state: sessions, quotas, labels, project paths, access codes and logs stay on this machine.
+data/
+node_modules/
+*.log
+*.tgz

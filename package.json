@@ -1,0 +1,63 @@
+{
+  "name": "@isanchez-aguilar/agent-desk",
+  "version": "0.1.0",
+  "description": "A local dashboard for your AI coding agents: quotas for Codex, Claude Code and Antigravity, recent sessions and token counts, and a work log, all read on your own machine.",
+  "keywords": [
+    "ai",
+    "ai-agents",
+    "agents",
+    "dashboard",
+    "quota",
+    "rate-limits",
+    "usage",
+    "tokens",
+    "claude-code",
+    "codex",
+    "antigravity",
+    "jules",
+    "qwen",
+    "developer-tools",
+    "local-first"
+  ],
+  "homepage": "https://github.com/isanchez-aguilar/agent-desk#readme",
+  "bugs": {
+    "url": "https://github.com/isanchez-aguilar/agent-desk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isanchez-aguilar/agent-desk.git"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Isaac Sanchez Aguilar",
+    "url": "https://github.com/isanchez-aguilar"
+  },
+  "type": "module",
+  "bin": {
+    "agent-desk": "bin/agent-desk.mjs"
+  },
+  "files": [
+    "bin/",
+    "public/",
+    "capture.mjs",
+    "collectors.mjs",
+    "lan.mjs",
+    "paths.mjs",
+    "record.mjs",
+    "server.mjs",
+    "store.mjs",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "start": "node bin/agent-desk.mjs",
+    "test": "node --test",
+    "check": "node --check server.mjs && node --check collectors.mjs && node --check lan.mjs && node --check paths.mjs && node --check bin/agent-desk.mjs && node --check public/app.js",
+    "prepublishOnly": "node --test"
+  }
+}
