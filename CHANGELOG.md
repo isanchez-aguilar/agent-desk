@@ -2,6 +2,13 @@
 
 All notable changes. Format based on [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Security
+
+- LAN mode: a client that had not signed in could stop the server by dropping the connection in the middle of a `POST /login` body. The aborted read is now handled.
+- LAN mode: expired sessions are pruned whenever a new one is issued, so they cannot pile up in memory.
+
 ## [0.1.1] - 2026-11-03
 
 ### Security

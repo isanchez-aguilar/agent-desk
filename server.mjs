@@ -87,7 +87,8 @@ export function createApp({ dataDir = dataDirectory(), port = 4318, lan: lanOpti
       if (req.method === 'POST' && path === '/login') {
         if (req.headers.origin !== pageOrigin) return json(403, { error: 'Request not allowed.' });
         if (limiter.blocked(from)) return page(429, 'Too many attempts. Wait a minute.');
-        let text = ''; for await (const chunk of req) { text += chunk.toString(); if (text.length > 512) return json(413, { error: 'Request too large.' }); }
+        // A client that drops the connection mid-body rejects this loop; it must not reach the process.
+        let text = ''; try { for await (const chunk of req) { text += chunk.toString(); if (text.length > 512) return json(413, { error: 'Request too large.' }); } } catch { return; }
         if (!codeMatches(new URLSearchParams(text).get('code'), accessCode)) { limiter.fail(from); return page(401, 'Wrong code.'); }
         limiter.clear(from);
         res.writeHead(303, { Location: '/', 'Set-Cookie': `qd_session=${sessions.issue()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000` }); return res.end();

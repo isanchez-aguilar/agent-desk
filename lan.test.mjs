@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir, networkInterfaces } from 'node:os';
 import { request } from 'node:http';
+import { connect } from 'node:net';
 import { isPrivateIPv4, hostAllowed, isLoopback, newAccessCode, codeMatches, createSessions, createLimiter } from './lan.mjs';
 import { initData, saveJSON } from './store.mjs';
 import { createApp } from './server.mjs';
@@ -125,4 +126,24 @@ test('a malformed request target from an unauthenticated network client gets a 4
   const status = path => new Promise(resolve => request({ host: lanAddress, port: 49196, path }, response => { response.resume(); resolve(response.statusCode); }).end());
   assert.equal(await status('//['), 400);
   assert.equal((await fetch(`http://${lanAddress}:49196/api/data`)).status, 401, 'still serving');
+});
+
+test('an unauthenticated client that drops the connection mid-login does not stop the server', { skip: !lanAddress && 'no private network interface' }, async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-lan-abort-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  initData(join(directory, 'data'));
+  saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false });
+  const app = createApp({ dataDir: join(directory, 'data'), port: 49197, lan: true });
+  await new Promise(resolve => app.server.listen(49197, '0.0.0.0', resolve));
+  t.after(() => new Promise(resolve => { app.server.close(resolve); app.server.closeAllConnections(); }));
+  const host = `${lanAddress}:49197`;
+  await new Promise(resolve => {
+    const socket = connect(49197, lanAddress, () => {
+      // Promise a 100-byte body, send 6 bytes and hang up.
+      socket.write(`POST /login HTTP/1.1\r\nHost: ${host}\r\nOrigin: http://${host}\r\nContent-Length: 100\r\n\r\ncode=A`);
+      setTimeout(() => socket.destroy(), 30);
+    });
+    socket.on('close', resolve); socket.on('error', () => {});
+  });
+  await new Promise(resolve => setTimeout(resolve, 100));
+  assert.equal((await fetch(`http://${host}/api/data`)).status, 401, 'still serving');
 });
