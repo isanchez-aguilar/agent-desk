@@ -91,6 +91,8 @@ export function createApp({ dataDir = dataDirectory(), port = 4318, lan: lanOpti
         limiter.clear(from);
         res.writeHead(303, { Location: '/', 'Set-Cookie': `qd_session=${sessions.issue()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000` }); return res.end();
       }
+      // Drain any body so a refused POST does not reset the client's connection.
+      req.resume();
       if (path.startsWith('/api/')) return json(401, { error: 'Access code required.' });
       return page(401);
     }
