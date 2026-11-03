@@ -19,7 +19,7 @@ test('local descriptions skip system wrappers and code, hide credentials and rem
 });
 
 test('session descriptions use actual titles and redact credentials', async t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-titles-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-titles-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   const file = join(directory, 'session.jsonl');
   writeFileSync(file, [
     { type: 'user', sessionId: 's1', cwd: directory, message: { content: 'Corregir formulario de registro' } },
@@ -72,7 +72,7 @@ test('Git discovery never chooses an executable from the project directory', () 
   const path = trustedGit(); if (path) assert.equal(isAbsolute(path), true);
 });
 test('agent-reported done cannot override controller review or blockage', t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-relay-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-relay-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   const folder = join(directory, '.ai/runs/test'); initData(folder);
   saveJSON(join(folder, 'task.json'), { id: 'test' });
   saveJSON(join(folder, 'turn-0-1.json'), { status: 'done', summary: 'Agent says done' });
@@ -82,7 +82,7 @@ test('agent-reported done cannot override controller review or blockage', t => {
   assert.equal(relayTaskStatus({ status: 'done' }), 'done');
 });
 test('Qwen reads only local-model token metadata, not cloud usage or content', t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-qwen-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-qwen-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   const path = join(directory, 'fixture.db'), database = new DatabaseSync(path);
   database.exec('CREATE TABLE session (id TEXT, directory TEXT); CREATE TABLE message (session_id TEXT, time_updated INTEGER, data TEXT)');
   database.prepare('INSERT INTO session VALUES (?, ?)').run('local-session', directory);
@@ -96,7 +96,7 @@ test('read-only Codex client cannot call login, consume credits or start agent w
   for (const method of ['thread/start', 'account/login/start', 'account/rateLimitResetCredit/consume']) await assert.rejects(rpcRead('codex', method), /not allowed/);
 });
 test('Claude partial messages are deduplicated and only a bounded initial request is retained', async t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-native-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-native-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   const file = join(directory, 'session.jsonl');
   const meta = { sessionId: 'session-id', cwd: directory, timestamp: '2026-10-05T10:00:00Z', gitBranch: 'fix/abc-213-secret-text' };
   const rows = [
@@ -111,7 +111,7 @@ test('Claude partial messages are deduplicated and only a bounded initial reques
   assert.equal(JSON.stringify(record).includes('secret123'), false);
 });
 test('Codex cumulative token reports are not added together', async t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-codex-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-codex-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   const file = join(directory, 'session.jsonl'); writeFileSync(file, [
     { type: 'session_meta', payload: { id: 'test', cwd: directory } },
     { type: 'event_msg', payload: { type: 'token_count', info: { total_token_usage: { total_tokens: 100 } } } },
@@ -120,7 +120,7 @@ test('Codex cumulative token reports are not added together', async t => {
   assert.equal((await parseNative(file, 'codex', [])).tokens, 180);
 });
 test('HTTP refuses foreign origins and hosts and serves no arbitrary local files', async t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-http-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-http-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   initData(join(directory, 'data'));
   saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false });
   // Re-create after writing the config so this isolated test reads no native logs.
@@ -128,10 +128,10 @@ test('HTTP refuses foreign origins and hosts and serves no arbitrary local files
   await new Promise(resolve => isolated.server.listen(49181, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => { isolated.server.close(resolve); isolated.server.closeAllConnections(); }));
   const response = await fetch('http://127.0.0.1:49181/api/data'); const data = await response.json(); assert.equal(response.status, 200);
-  const foreign = await fetch('http://127.0.0.1:49181/api/record', { method: 'POST', headers: { Origin: 'http://evil.example', 'X-Agent-Desk-Token': data.csrf }, body: '{}' }); assert.equal(foreign.status, 403);
+  const foreign = await fetch('http://127.0.0.1:49181/api/record', { method: 'POST', headers: { Origin: 'http://evil.example', 'X-Quota-Desk-Token': data.csrf }, body: '{}' }); assert.equal(foreign.status, 403);
   const hostStatus = await new Promise(resolve => request('http://127.0.0.1:49181/api/data', { headers: { Host: 'evil.example:49181' } }, response => { response.resume(); resolve(response.statusCode); }).end()); assert.equal(hostStatus, 403);
   assert.equal((await fetch('http://127.0.0.1:49181/store.mjs')).status, 404);
-  const valid = await fetch('http://127.0.0.1:49181/api/record', { method: 'POST', headers: { Origin: isolated.origin, 'X-Agent-Desk-Token': data.csrf }, body: JSON.stringify({ agent: 'qwen', project: 'Test', task: '<img src=x onerror=alert(1)>', status: 'review' }) });
+  const valid = await fetch('http://127.0.0.1:49181/api/record', { method: 'POST', headers: { Origin: isolated.origin, 'X-Quota-Desk-Token': data.csrf }, body: JSON.stringify({ agent: 'qwen', project: 'Test', task: '<img src=x onerror=alert(1)>', status: 'review' }) });
   assert.equal(valid.status, 200); const updated = await (await fetch('http://127.0.0.1:49181/api/data')).json(); assert.equal(updated.records.length, 1);
   const exported = await (await fetch('http://127.0.0.1:49181/api/export')).json(); assert.equal('csrf' in exported, false);
 });

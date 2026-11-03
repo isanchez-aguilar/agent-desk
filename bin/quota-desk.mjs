@@ -4,14 +4,14 @@ import { join } from 'node:path';
 import { dataDirectory, toolDirectory } from '../paths.mjs';
 
 const { version } = JSON.parse(readFileSync(join(toolDirectory, 'package.json'), 'utf8'));
-const help = `Agent Desk ${version}: a local dashboard for your AI coding agents' sessions and quotas.
+const help = `Quota Desk ${version}: a local dashboard for your AI coding agents' sessions and quotas.
 
 Usage:
-  agent-desk [--port <n>]       Start the panel on http://127.0.0.1:4318 (default port)
-  agent-desk record <file.json> Add a work record (see the README for the format)
-  agent-desk capture [agy]      Status-line command: reads the official status JSON on stdin
-  agent-desk data               Print the data folder (AGENT_DESK_DATA or ~/.agent-desk)
-  agent-desk --version | --help`;
+  quota-desk [--port <n>]       Start the panel on http://127.0.0.1:4318 (default port)
+  quota-desk record <file.json> Add a work record (see the README for the format)
+  quota-desk capture [agy]      Status-line command: reads the official status JSON on stdin
+  quota-desk data               Print the data folder (QUOTA_DESK_DATA or ~/.quota-desk)
+  quota-desk --version | --help`;
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === '--help' || command === '-h' || command === 'help') console.log(help);

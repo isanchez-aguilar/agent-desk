@@ -7,13 +7,13 @@ export const toolDirectory = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Where sessions, quotas, labels and config.json live, in this order:
- * AGENT_DESK_DATA, then a `data/` folder next to the code that already holds a
- * config.json (a checkout used before 0.1.0), then ~/.agent-desk.
+ * QUOTA_DESK_DATA, then a `data/` folder next to the code that already holds a
+ * config.json (a checkout used before 0.1.0), then ~/.quota-desk.
  */
 export function dataDirectory({ env = process.env, home = homedir(), legacy = join(toolDirectory, 'data') } = {}) {
-  if (env.AGENT_DESK_DATA) return resolve(env.AGENT_DESK_DATA);
+  if (env.QUOTA_DESK_DATA) return resolve(env.QUOTA_DESK_DATA);
   if (existsSync(join(legacy, 'config.json'))) return legacy;
-  return join(home, '.agent-desk');
+  return join(home, '.quota-desk');
 }
 
 /** An absolute path on a local disk. UNC and device paths (\\server\share, //server/share, \\?\) are refused. */

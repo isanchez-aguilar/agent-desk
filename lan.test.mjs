@@ -31,8 +31,8 @@ test('access codes are readable, compared loosely and never empty', () => {
 
 test('sessions accept only issued tokens and the limiter locks after repeated failures', () => {
   const sessions = createSessions(), token = sessions.issue();
-  assert.equal(sessions.valid(`other=1; ad_session=${token}`), true);
-  assert.equal(sessions.valid(`ad_session=${'0'.repeat(64)}`), false);
+  assert.equal(sessions.valid(`other=1; qd_session=${token}`), true);
+  assert.equal(sessions.valid(`qd_session=${'0'.repeat(64)}`), false);
   assert.equal(sessions.valid(''), false);
   let time = 0; const limiter = createLimiter({ limit: 3, windowMs: 1000, now: () => time });
   for (let index = 0; index < 3; index++) limiter.fail('a');
@@ -43,7 +43,7 @@ test('sessions accept only issued tokens and the limiter locks after repeated fa
 const lanAddress = Object.values(networkInterfaces()).flat().find(item => item && item.family === 'IPv4' && !item.internal && isPrivateIPv4(item.address))?.address;
 
 test('LAN mode asks a non-loopback client for the code and then lets it in', { skip: !lanAddress && 'no private network interface' }, async t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-lan-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-lan-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   initData(join(directory, 'data'));
   // Missing executables: a refresh in this test must never query a real account.
   saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false, codexExe: join(directory, 'missing-codex'), agyExe: join(directory, 'missing-agy') });
@@ -65,14 +65,14 @@ test('LAN mode asks a non-loopback client for the code and then lets it in', { s
   const session = cookie.split(';')[0];
   const data = await (await fetch(`${base}/api/data`, { headers: { Cookie: session } })).json(); assert.ok(data.csrf); assert.equal(data.readOnly, true);
   // Signed in over the network the panel is still read-only: no records, labels, projects or quotas.
-  const write = (path, body) => fetch(`${base}/api/${path}`, { method: 'POST', headers: { Cookie: session, Origin: base, 'X-Agent-Desk-Token': data.csrf }, body: JSON.stringify(body) });
+  const write = (path, body) => fetch(`${base}/api/${path}`, { method: 'POST', headers: { Cookie: session, Origin: base, 'X-Quota-Desk-Token': data.csrf }, body: JSON.stringify(body) });
   for (const [path, body] of [['record', { agent: 'claude', project: 'p', task: 't', status: 'done' }], ['project', { name: 'p', path: directory }], ['quota', { agent: 'claude', remaining: 5 }], ['label', { id: 'x', task: 't' }]]) assert.equal((await write(path, body)).status, 403, path);
   assert.equal((await write('refresh', {})).status, 200, 'refresh stays available');
   const local = await (await fetch('http://127.0.0.1:49182/api/data')).json(); assert.equal(local.readOnly, false);
 });
 
 test('without LAN mode a private-IP Host is refused', async t => {
-  const directory = mkdtempSync(join(tmpdir(), 'agent-desk-nolan-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-nolan-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
   initData(join(directory, 'data'));
   saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false });
   const app = createApp({ dataDir: join(directory, 'data'), port: 49183 });

@@ -1,11 +1,11 @@
-# Agent Desk
+# Quota Desk
 
 A local dashboard for your AI coding agents. It shows how much quota you have
 left on Codex, Claude Code and Antigravity, the recent sessions of each agent
 with their token counts, and a log of who worked on what, all read from files
 and official commands on your own machine.
 
-![Agent Desk overview with quota cards, activity stats and recent work (synthetic data)](docs/screenshot.png)
+![Quota Desk overview with quota cards, activity stats and recent work (synthetic data)](docs/screenshot.png)
 
 - **No dependencies, no accounts, no telemetry.** Node 22.13+ and a browser.
 - **Read-only towards your agents.** It never starts a conversation, logs in or
@@ -17,8 +17,8 @@ and official commands on your own machine.
 ## Install
 
 ```bash
-npm install --global @isanchez-aguilar/agent-desk
-agent-desk
+npm install --global quota-desk
+quota-desk
 ```
 
 Then open `http://127.0.0.1:4318`. Stop it with Ctrl+C.
@@ -26,21 +26,21 @@ Then open `http://127.0.0.1:4318`. Stop it with Ctrl+C.
 From a checkout instead:
 
 ```bash
-git clone https://github.com/isanchez-aguilar/agent-desk.git
-cd agent-desk
+git clone https://github.com/isanchez-aguilar/quota-desk.git
+cd quota-desk
 npm start
 ```
 
-On Windows, `Start-AgentDesk.ps1` starts the server hidden in the background and
-opens the browser (`-NoBrowser` to skip that); `Stop-AgentDesk.ps1` stops it
+On Windows, `Start-QuotaDesk.ps1` starts the server hidden in the background and
+opens the browser (`-NoBrowser` to skip that); `Stop-QuotaDesk.ps1` stops it
 after checking that the recorded PID really is this server.
 
 ```text
-agent-desk [--port <n>]       Start the panel (default port 4318)
-agent-desk record <file.json> Add a work record
-agent-desk capture [agy]      Status-line command for Claude Code
-agent-desk data               Print the data folder
-agent-desk --version | --help
+quota-desk [--port <n>]       Start the panel (default port 4318)
+quota-desk record <file.json> Add a work record
+quota-desk capture [agy]      Status-line command for Claude Code
+quota-desk data               Print the data folder
+quota-desk --version | --help
 ```
 
 ## What it reads
@@ -49,7 +49,7 @@ agent-desk --version | --help
 |---|---|---|
 | Codex quota | `codex app-server`, method `account/rateLimits/read` only, with your existing login | 5-hour and 7-day windows, reset times, extra resets if reported |
 | Antigravity quota | `agy -p /usage` in plan mode; the response must show zero turns and zero tokens | Each group's shared windows (they are not per-model credits) |
-| Claude Code quota | The official status-line JSON, through `agent-desk capture` | 5-hour and 7-day `rate_limits`, if your plan reports them |
+| Claude Code quota | The official status-line JSON, through `quota-desk capture` | 5-hour and 7-day `rate_limits`, if your plan reports them |
 | Claude Code and Codex sessions | The 80 most recent JSONL logs in `~/.claude/projects` and `~/.codex/sessions` (files over 64 MiB are skipped) | Session id, title, a first-request excerpt (max 240 characters, credential patterns redacted, code blocks removed), model, branch, timestamp, token total |
 | Qwen through OpenCode | `~/.local/share/opencode/opencode.db`, opened read-only | Token counts for a provider named `local` with a Qwen model; never message content |
 | Relay runs | `.ai/runs/*` in the projects you add and their Git worktrees, as written by [Relayrace AI](https://github.com/isanchez-aguilar/relayrace-ai) | Task, hand-off summary, status, provider, model and tokens per turn |
@@ -63,15 +63,15 @@ values stay unknown instead of being guessed.
 
 ### Claude Code status line
 
-Claude Code passes its quota to a status-line command. Point it at Agent Desk in
+Claude Code passes its quota to a status-line command. Point it at Quota Desk in
 `~/.claude/settings.json`:
 
 ```json
-{ "statusLine": { "type": "command", "command": "agent-desk capture" } }
+{ "statusLine": { "type": "command", "command": "quota-desk capture" } }
 ```
 
 It prints a short quota line and saves the reading. If you already have a status
-line, keep yours and call `agent-desk capture` from it with the same stdin.
+line, keep yours and call `quota-desk capture` from it with the same stdin.
 Project settings can override user settings; restart Claude Code to load it.
 
 ### Work records
@@ -79,7 +79,7 @@ Project settings can override user settings; restart Claude Code to load it.
 Use **Record work** in the panel, or let an agent hand in a JSON file:
 
 ```bash
-agent-desk record work.json
+quota-desk record work.json
 ```
 
 ```json
@@ -103,14 +103,14 @@ work ended, not that the task was approved. Use `null` for unknown tokens.
 
 ## Data folder and `config.json`
 
-Everything Agent Desk stores lives in one folder, chosen in this order:
+Everything Quota Desk stores lives in one folder, chosen in this order:
 
-1. `AGENT_DESK_DATA`, if set;
+1. `QUOTA_DESK_DATA`, if set;
 2. a `data/` folder next to the code that already has a `config.json` (checkouts
    from before 0.1.0 keep working);
-3. `~/.agent-desk` (on Windows, `%USERPROFILE%\.agent-desk`).
+3. `~/.quota-desk` (on Windows, `%USERPROFILE%\.quota-desk`).
 
-`agent-desk data` prints it. It holds `config.json`, quota readings, labels,
+`quota-desk data` prints it. It holds `config.json`, quota readings, labels,
 manual records, the LAN code and, with the Windows scripts, the server logs. Keep
 it when you upgrade. Do not put keys in it.
 
@@ -140,21 +140,22 @@ Restart the server after editing the file by hand.
 
 [Relayrace AI](https://github.com/isanchez-aguilar/relayrace-ai) is a separate
 tool that runs several coding agents as one relay team. It never starts or
-bundles Agent Desk; the two share only this `config.json`:
+bundles Quota Desk; the two share only this `config.json`:
 
 - `relayrace init` appends `{ "name", "path" }` to `projects` (backing the file
   up once as `config.json.bak-relaykit` and never touching existing entries), and
   `sync` reads `path` and the optional `cwd` of each entry.
-- Agent Desk then shows the relay's runs in `.ai/runs` for those repos.
+- Quota Desk then shows the relay's runs in `.ai/runs` for those repos.
 
 Tell Relayrace where the file is with `"agentDesk"` in its config file or the
-`RELAYKIT_AGENT_DESK` environment variable:
+`RELAYKIT_AGENT_DESK` environment variable (the names come from this project's
+working title, Agent Desk):
 
 ```json
-{ "agentDesk": "~/.agent-desk/config.json" }
+{ "agentDesk": "~/.quota-desk/config.json" }
 ```
 
-Restart Agent Desk after `init` to see the new project. The `projects` format is
+Restart Quota Desk after `init` to see the new project. The `projects` format is
 a shared contract: a change to it needs a matching change in Relayrace.
 
 ## Opening it from another device
@@ -169,7 +170,7 @@ ssh -N -L 4318:127.0.0.1:4318 you@<this computer>
 
 Then open `http://127.0.0.1:4318` on the other device. Use port 4318 on both
 ends: the server answers only to the `Host` `127.0.0.1:4318` or `localhost:4318`.
-This needs an SSH server on the computer running Agent Desk (on Windows, the
+This needs an SSH server on the computer running Quota Desk (on Windows, the
 optional OpenSSH Server feature).
 
 ### LAN mode (opt-in)
@@ -182,7 +183,7 @@ and restart. Then:
   are refused, which blocks DNS rebinding.
 - Every other device must enter an access code (`XXXX-XXXX`). It is generated
   once and stored in `lan-code` in the data folder; on Windows,
-  `Start-AgentDesk.ps1` prints it with the LAN address. The browser stays signed
+  `Start-QuotaDesk.ps1` prints it with the LAN address. The browser stays signed
   in for 30 days or until the server restarts. Five wrong codes per minute lock
   that address out for the rest of the minute.
 - **Other devices are read-only.** They can view, export and refresh quotas, but
@@ -192,7 +193,7 @@ and restart. Then:
   anyone who can watch the network can capture them. Use it only on a network you
   control, never on public or shared Wi-Fi. When in doubt, use the SSH tunnel.
 - Allow inbound TCP 4318 on private networks only. On Windows:
-  `New-NetFirewallRule -DisplayName "Agent Desk" -Direction Inbound -Protocol TCP -LocalPort 4318 -Profile Private -Action Allow`.
+  `New-NetFirewallRule -DisplayName "Quota Desk" -Direction Inbound -Protocol TCP -LocalPort 4318 -Profile Private -Action Allow`.
 
 A signed-in device sees everything the panel shows: quotas, session titles and
 first-request excerpts, models, branches, token counts, your notes, and your

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: An idea for Agent Desk
+about: An idea for Quota Desk
 labels: enhancement
 ---
 

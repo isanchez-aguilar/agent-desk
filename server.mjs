@@ -89,7 +89,7 @@ export function createApp({ dataDir = dataDirectory(), port = 4318, lan: lanOpti
         let text = ''; for await (const chunk of req) { text += chunk.toString(); if (text.length > 512) return json(413, { error: 'Request too large.' }); }
         if (!codeMatches(new URLSearchParams(text).get('code'), accessCode)) { limiter.fail(from); return page(401, 'Wrong code.'); }
         limiter.clear(from);
-        res.writeHead(303, { Location: '/', 'Set-Cookie': `ad_session=${sessions.issue()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000` }); return res.end();
+        res.writeHead(303, { Location: '/', 'Set-Cookie': `qd_session=${sessions.issue()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000` }); return res.end();
       }
       if (path.startsWith('/api/')) return json(401, { error: 'Access code required.' });
       return page(401);
@@ -100,11 +100,11 @@ export function createApp({ dataDir = dataDirectory(), port = 4318, lan: lanOpti
       const path = new URL(req.url, origin).pathname;
       if (req.method === 'GET' && path === '/api/data') return json(200, { ...await snapshotData(), readOnly });
       if (req.method === 'GET' && path === '/api/export') {
-        const value = await snapshotData(); res.setHeader('Content-Disposition', 'attachment; filename="agent-desk-export.json"');
+        const value = await snapshotData(); res.setHeader('Content-Disposition', 'attachment; filename="quota-desk-export.json"');
         return json(200, { generatedAt: value.generatedAt, records: value.records, quotas: value.quotas });
       }
       if (req.method === 'POST' && path.startsWith('/api/')) {
-        if (req.headers.origin !== pageOrigin || req.headers['x-agent-desk-token'] !== nonce) return json(403, { error: 'Request not allowed.' });
+        if (req.headers.origin !== pageOrigin || req.headers['x-quota-desk-token'] !== nonce) return json(403, { error: 'Request not allowed.' });
         if (readOnly && path !== '/api/refresh') return json(403, { error: 'Read-only over the network. Make changes on this computer.' });
         let text = ''; for await (const chunk of req) { text += chunk.toString(); if (text.length > 16000) return json(413, { error: 'Request too large.' }); }
         const input = JSON.parse(text || '{}');
@@ -146,7 +146,7 @@ export function start({ port = 4318, ...options } = {}) {
   return new Promise((resolveStart, reject) => {
     app.server.once('error', reject);
     app.server.listen(port, app.lan ? '0.0.0.0' : '127.0.0.1', () => {
-      console.log(`Agent Desk: ${app.origin}`);
+      console.log(`Quota Desk: ${app.origin}`);
       if (app.lan) console.log(`LAN mode on: open http://<this computer's IP>:${port} on the other device and enter the code in ${join(options.dataDir || dataDirectory(), 'lan-code')}.`);
       app.refresh().catch(() => {});
       resolveStart(app);

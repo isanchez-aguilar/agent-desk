@@ -10,7 +10,7 @@ labels: bug
 
 **Environment**
 
-- Agent Desk version (`agent-desk --version`):
+- Quota Desk version (`quota-desk --version`):
 - OS and Node version:
 - Which agents are installed (Codex, Claude Code, Antigravity, OpenCode):
 - LAN mode on or off:
