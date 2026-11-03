@@ -2,6 +2,16 @@
 
 All notable changes. Format based on [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- LAN mode: a refused request from a client that has not signed in now drains its body, so the connection is not reset.
+
+### Tests
+
+- Unauthenticated network clients cannot read or write even with a forged `Origin` and token; local writes still need the `Origin` and the per-process token.
+
 ## [0.1.0] - Unreleased
 
 First public release.

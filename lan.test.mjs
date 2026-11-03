@@ -78,3 +78,35 @@ test('without LAN mode a private-IP Host is refused', async t => {
   const app = createApp({ dataDir: join(directory, 'data'), port: 49183 });
   assert.equal(app.lan, false); assert.equal(app.accessCode, null);
 });
+
+test('in LAN mode an unauthenticated network client can neither read nor write, even with a forged Origin and token', { skip: !lanAddress && 'no private network interface' }, async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-lan-deny-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  initData(join(directory, 'data'));
+  saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false, codexExe: join(directory, 'missing-codex'), agyExe: join(directory, 'missing-agy') });
+  const app = createApp({ dataDir: join(directory, 'data'), port: 49194, lan: true });
+  await new Promise(resolve => app.server.listen(49194, '0.0.0.0', resolve));
+  t.after(() => new Promise(resolve => { app.server.close(resolve); app.server.closeAllConnections(); }));
+  const base = `http://${lanAddress}:49194`;
+  const local = await (await fetch('http://127.0.0.1:49194/api/data')).json();
+  for (const path of ['record', 'project', 'quota', 'label', 'refresh']) {
+    const response = await fetch(`${base}/api/${path}`, { method: 'POST', headers: { Origin: base, 'X-Quota-Desk-Token': local.csrf }, body: JSON.stringify({ agent: 'claude', project: 'p', task: 't', status: 'done', name: 'p', path: directory }) });
+    assert.equal(response.status, 401, path);
+  }
+  for (const path of ['/api/data', '/api/export', '/app.js', '/styles.css']) assert.equal((await fetch(`${base}${path}`)).status, 401, path);
+  assert.equal((await fetch(`${base}/api/data`, { headers: { Cookie: `qd_session=${'a'.repeat(64)}` } })).status, 401, 'a forged cookie is not a session');
+  assert.equal((await (await fetch('http://127.0.0.1:49194/api/data')).json()).records.length, 0, 'nothing was written');
+});
+
+test('a local client still needs the Origin and the per-process token to write', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'quota-desk-token-')); t.after(() => rmSync(directory, { recursive: true, force: true }));
+  initData(join(directory, 'data'));
+  saveJSON(join(directory, 'data/config.json'), { projects: [], nativeSessions: false });
+  const app = createApp({ dataDir: join(directory, 'data'), port: 49195 });
+  await new Promise(resolve => app.server.listen(49195, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => { app.server.close(resolve); app.server.closeAllConnections(); }));
+  const body = JSON.stringify({ agent: 'qwen', project: 'p', task: 't', status: 'done' });
+  const post = headers => fetch('http://127.0.0.1:49195/api/record', { method: 'POST', headers, body });
+  assert.equal((await post({})).status, 403, 'no origin, no token');
+  assert.equal((await post({ Origin: app.origin })).status, 403, 'no token');
+  assert.equal((await post({ Origin: app.origin, 'X-Quota-Desk-Token': 'wrong' })).status, 403, 'wrong token');
+});
