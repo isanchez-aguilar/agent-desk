@@ -2,7 +2,7 @@
 
 All notable changes. Format based on [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [0.1.2] - 2026-11-03
 
 ### Security
 
