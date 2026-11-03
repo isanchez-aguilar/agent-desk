@@ -37,13 +37,18 @@ export function codeMatches(input, code) {
 }
 
 /** In-memory sessions: a restart signs everybody out. */
-export function createSessions() {
-  const tokens = new Set();
+export const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+export function createSessions({ now = Date.now, ttl = SESSION_MS } = {}) {
+  const tokens = new Map();
   return {
-    issue() { const token = randomBytes(32).toString('hex'); tokens.add(token); return token; },
+    issue() { const token = randomBytes(32).toString('hex'); tokens.set(token, now() + ttl); return token; },
     valid(cookieHeader) {
       const match = /(?:^|;\s*)qd_session=([0-9a-f]{64})(?:;|$)/.exec(cookieHeader || '');
-      return Boolean(match) && tokens.has(match[1]);
+      if (!match) return false;
+      const expires = tokens.get(match[1]);
+      if (expires === undefined) return false;
+      if (now() >= expires) { tokens.delete(match[1]); return false; }
+      return true;
     },
   };
 }

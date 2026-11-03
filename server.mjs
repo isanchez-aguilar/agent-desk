@@ -82,7 +82,8 @@ export function createApp({ dataDir = dataDirectory(), port = 4318, lan: lanOpti
         res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'");
         res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', ...headers }); res.end(loginPage(message));
       };
-      const path = new URL(req.url, pageOrigin).pathname, from = req.socket.remoteAddress;
+      let path; try { path = new URL(req.url, pageOrigin).pathname; } catch { req.resume(); return json(400, { error: 'Bad request.' }); }
+      const from = req.socket.remoteAddress;
       if (req.method === 'POST' && path === '/login') {
         if (req.headers.origin !== pageOrigin) return json(403, { error: 'Request not allowed.' });
         if (limiter.blocked(from)) return page(429, 'Too many attempts. Wait a minute.');

@@ -6,6 +6,8 @@ All notable changes. Format based on [Keep a Changelog](https://keepachangelog.c
 
 ### Fixed
 
+- LAN mode: a malformed request target (for example `//[`) from a client that had not signed in raised an unhandled error and stopped the server. It now gets a `400`.
+- LAN mode: sessions now expire on the server after 30 days, as the cookie and the docs already said.
 - LAN mode: a refused request from a client that has not signed in now drains its body, so the connection is not reset.
 
 ### Tests
