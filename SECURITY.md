@@ -11,9 +11,9 @@ are made public.
 
 Only the latest release (`0.x`) receives fixes.
 
-## What Agent Desk does and does not do
+## What Quota Desk does and does not do
 
-Agent Desk reads usage data that your agents already keep on your machine and
+Quota Desk reads usage data that your agents already keep on your machine and
 shows it in a local web page. It is built to keep that bounded:
 
 - **No dependencies** and no network access of its own. The only programs it
@@ -58,10 +58,10 @@ LAN mode is **off** unless you set `"lan": true` in `config.json`. When it is on
   SSH tunnel (see the README) when in doubt.
 - Connections from this computer, including through an SSH tunnel or a local
   reverse proxy, count as local: they need no code and can write. Do not put a
-  proxy that forwards outside traffic in front of Agent Desk.
+  proxy that forwards outside traffic in front of Quota Desk.
 
 What a signed-in network client can see: quota readings, session titles and
 first-request excerpts, models, branches, token counts, your manual records and
 notes, and the names and **absolute paths** of your projects.
 
-Report anything that makes Agent Desk do more than this.
+Report anything that makes Quota Desk do more than this.

@@ -48,10 +48,10 @@ jobs:
         run: |
           npm pack --silent
           prefix="$RUNNER_TEMP/prefix"
-          npm install --global --prefix "$prefix" ./isanchez-aguilar-agent-desk-*.tgz
+          npm install --global --prefix "$prefix" ./quota-desk-*.tgz
           # On Windows RUNNER_TEMP is D:\a\_temp; bash PATH needs /d/a/_temp.
           if command -v cygpath > /dev/null; then prefix="$(cygpath -u "$prefix")"; fi
           export PATH="$prefix:$prefix/bin:$PATH"
-          export AGENT_DESK_DATA="$RUNNER_TEMP/agent-desk-data"
-          agent-desk --version
-          test "$(agent-desk data)" = "$(node -p "require('path').resolve(process.env.AGENT_DESK_DATA)")"
+          export QUOTA_DESK_DATA="$RUNNER_TEMP/quota-desk-data"
+          quota-desk --version
+          test "$(quota-desk data)" = "$(node -p "require('path').resolve(process.env.QUOTA_DESK_DATA)")"

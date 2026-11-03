@@ -28,5 +28,5 @@ try {
     });
   }
   const parts = buckets.map(bucket => `${bucket.label}: ${bucket.remaining == null ? '?' : Math.round(bucket.remaining)}%`);
-  process.stdout.write(`${input.model?.display_name || agent} · ${parts.join(' · ') || 'no quota data'} · Agent Desk`);
-} catch { process.stdout.write('Agent Desk · no quota data'); }
+  process.stdout.write(`${input.model?.display_name || agent} · ${parts.join(' · ') || 'no quota data'} · Quota Desk`);
+} catch { process.stdout.write('Quota Desk · no quota data'); }

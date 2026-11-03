@@ -42,7 +42,7 @@ export function createSessions() {
   return {
     issue() { const token = randomBytes(32).toString('hex'); tokens.add(token); return token; },
     valid(cookieHeader) {
-      const match = /(?:^|;\s*)ad_session=([0-9a-f]{64})(?:;|$)/.exec(cookieHeader || '');
+      const match = /(?:^|;\s*)qd_session=([0-9a-f]{64})(?:;|$)/.exec(cookieHeader || '');
       return Boolean(match) && tokens.has(match[1]);
     },
   };
@@ -59,4 +59,4 @@ export function createLimiter({ limit = 5, windowMs = 60000, now = Date.now } = 
   };
 }
 
-export const loginPage = message => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Agent Desk</title><style>body{font:18px system-ui;max-width:22rem;margin:20vh auto;padding:0 1rem}input,button{font:inherit;padding:.6rem;width:100%;box-sizing:border-box;margin-top:.6rem}.error{color:#b00020}</style></head><body><h1>Agent Desk</h1><p>Enter the access code shown by the server.</p>${message ? `<p class="error">${message}</p>` : ''}<form method="post" action="/login"><input name="code" autocomplete="off" autocapitalize="characters" autofocus placeholder="XXXX-XXXX"><button>Sign in</button></form></body></html>`;
+export const loginPage = message => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quota Desk</title><style>body{font:18px system-ui;max-width:22rem;margin:20vh auto;padding:0 1rem}input,button{font:inherit;padding:.6rem;width:100%;box-sizing:border-box;margin-top:.6rem}.error{color:#b00020}</style></head><body><h1>Quota Desk</h1><p>Enter the access code shown by the server.</p>${message ? `<p class="error">${message}</p>` : ''}<form method="post" action="/login"><input name="code" autocomplete="off" autocapitalize="characters" autofocus placeholder="XXXX-XXXX"><button>Sign in</button></form></body></html>`;

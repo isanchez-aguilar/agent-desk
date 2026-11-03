@@ -15,10 +15,10 @@ Thanks for helping.
 ```bash
 npm run check
 node --test
-node bin/agent-desk.mjs
+node bin/quota-desk.mjs
 ```
 
-Set `AGENT_DESK_DATA` to a scratch folder to keep your own data out of the way while testing.
+Set `QUOTA_DESK_DATA` to a scratch folder to keep your own data out of the way while testing.
 
 ## Releasing (maintainers)
 

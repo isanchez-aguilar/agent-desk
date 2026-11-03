@@ -8,7 +8,7 @@ const title = id => Object.hasOwn(data.agents, id) ? data.agents[id] : 'Unknown 
 const avatar = id => element('span', id === 'unknown' ? '?' : ({ claude: 'C', codex: '◎', agy: 'A', jules: 'J', chatgpt: 'G', qwen: 'Q' }[id] || '?'), `avatar ${Object.hasOwn(data.agents, id) ? id : ''}`);
 function notify(text) { $('#notice').textContent = text; $('#notice').hidden = false; }
 async function post(path, payload) {
-  const response = await fetch(`/api/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Desk-Token': data.csrf }, body: JSON.stringify(payload) });
+  const response = await fetch(`/api/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Quota-Desk-Token': data.csrf }, body: JSON.stringify(payload) });
   const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Could not save.'); return result;
 }
 async function load() {

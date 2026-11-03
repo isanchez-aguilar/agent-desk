@@ -1,5 +1,5 @@
 {
-  "name": "@isanchez-aguilar/agent-desk",
+  "name": "quota-desk",
   "version": "0.1.0",
   "description": "A local dashboard for your AI coding agents: quotas for Codex, Claude Code and Antigravity, recent sessions and token counts, and a work log, all read on your own machine.",
   "keywords": [
@@ -19,13 +19,13 @@
     "developer-tools",
     "local-first"
   ],
-  "homepage": "https://github.com/isanchez-aguilar/agent-desk#readme",
+  "homepage": "https://github.com/isanchez-aguilar/quota-desk#readme",
   "bugs": {
-    "url": "https://github.com/isanchez-aguilar/agent-desk/issues"
+    "url": "https://github.com/isanchez-aguilar/quota-desk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/isanchez-aguilar/agent-desk.git"
+    "url": "git+https://github.com/isanchez-aguilar/quota-desk.git"
   },
   "license": "Apache-2.0",
   "author": {
@@ -34,7 +34,7 @@
   },
   "type": "module",
   "bin": {
-    "agent-desk": "bin/agent-desk.mjs"
+    "quota-desk": "bin/quota-desk.mjs"
   },
   "files": [
     "bin/",
@@ -55,9 +55,9 @@
     "access": "public"
   },
   "scripts": {
-    "start": "node bin/agent-desk.mjs",
+    "start": "node bin/quota-desk.mjs",
     "test": "node --test",
-    "check": "node --check server.mjs && node --check collectors.mjs && node --check lan.mjs && node --check paths.mjs && node --check bin/agent-desk.mjs && node --check public/app.js",
+    "check": "node --check server.mjs && node --check collectors.mjs && node --check lan.mjs && node --check paths.mjs && node --check bin/quota-desk.mjs && node --check public/app.js",
     "prepublishOnly": "node --test"
   }
 }
