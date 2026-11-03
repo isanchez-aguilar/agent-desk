@@ -41,7 +41,10 @@ export const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 export function createSessions({ now = Date.now, ttl = SESSION_MS } = {}) {
   const tokens = new Map();
   return {
-    issue() { const token = randomBytes(32).toString('hex'); tokens.set(token, now() + ttl); return token; },
+    issue() {
+      for (const [token, expires] of tokens) if (now() >= expires) tokens.delete(token);
+      const token = randomBytes(32).toString('hex'); tokens.set(token, now() + ttl); return token;
+    },
     valid(cookieHeader) {
       const match = /(?:^|;\s*)qd_session=([0-9a-f]{64})(?:;|$)/.exec(cookieHeader || '');
       if (!match) return false;
